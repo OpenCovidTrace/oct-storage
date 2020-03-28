@@ -24,7 +24,6 @@ async def get_tracks(request):
         ga.func.ST_Y(ga.func.ST_Dump(models.Track.linestring).geom),
         ga.func.ST_Z(ga.func.ST_Dump(models.Track.linestring).geom),
     ]).gino.all()
-    logger.debug(track_query[0])
     track_results = {}
     for tid, uid, created, lat, lng, ts in track_query:
         if tid not in track_results:
