@@ -10,8 +10,8 @@ env.use_ssh_config = True
 if not env.hosts:
     env.hosts = ["1ch-dev"]
 
-folder = "/srv/covid-api-tracks"
-venv_folder = "/srv/.pyenv/versions/covid-ap-tracks"
+folder = "/srv/covidapi-tracks"
+venv_folder = "/srv/.pyenv/versions/covidapi-tracks"
 git_repo = "git@git.1check.in:covidapp/covidapi-tracks.git"
 www_user = "app"
 
@@ -30,7 +30,7 @@ def deploy():
         sudo('{}/bin/pip install -r requirements.txt'.format(venv_folder))
         sudo('make upgrade')
 
-    restart('covid-api-tracks')
+    restart('covidapi-tracks')
 
 
 def restart(process):
