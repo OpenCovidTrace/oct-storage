@@ -1,4 +1,4 @@
-from sanic import Sanic, response
+from sanic import Sanic
 
 from gino.ext.sanic import Gino
 
@@ -11,4 +11,4 @@ db = Gino()
 db.init_app(app)
 
 
-from . import views
+from . import views  # noqa

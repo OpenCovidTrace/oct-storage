@@ -33,7 +33,7 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 def json_obj(*args, **kwargs):
     """Dump json object with encoding of custom types"""
-    return json_dict(dict(*args, **kwargs))
+    return json_dumps(dict(*args, **kwargs))
 
 
 def clean_unicode_string(val):

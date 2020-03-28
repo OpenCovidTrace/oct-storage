@@ -1,0 +1,26 @@
+test:
+  stage: test
+  script:
+    - pyenv local 3.7.3
+    - pyenv virtualenv --force 3.7.3 venv37
+    - pyenv activate venv37
+    - pip3 install -r requirements_test.txt
+    - flake8
+  tags:
+    - dev
+    - shell
+
+deploy_staging:
+  stage: deploy
+  script:
+    - virtualenv -p python2 venv2
+    - source ./venv2/bin/activate
+    - pip install fabric==1.14
+    - echo "Deploy to $STAGING_IP"
+    - fab --host=$STAGING_IP --user=$STAGING_DEPLOY_USER deploy
+  tags:
+    - dev
+    - shell
+  only:
+    - dev
+  environment: staging
