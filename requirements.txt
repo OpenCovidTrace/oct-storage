@@ -1,0 +1,12 @@
+# utils
+simple_settings
+pytz
+
+# web
+sanic
+
+# db
+gino
+geoalchemy2==0.7.0
+alembic
+psycopg2-binary
