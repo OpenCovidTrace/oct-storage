@@ -1,0 +1,204 @@
+openapi: 3.0.0
+servers:
+  - description: Development server
+    url: http://covidapi-tracks.dev.1check.in/
+security:
+  - ApiKeyAuth: []
+info:
+  description: This is a simple API
+  version: "1.0.0"
+  title: CovidApp API
+  contact:
+    email: rodionov@adhoc.im
+  license:
+    name: Adhoc Copyright
+tags:
+  - name: tracks
+    description: API for tracks
+  - name: api
+    description: API app calls
+  - name: news
+    description: API for latest public data, news
+paths:
+  /user/signUp:
+    post:
+      tags:
+        - api
+      summary: sign up new user
+      operationId: userSignUp
+      responses:
+        '201':
+          description: item created
+          content:
+            application/json:
+             schema:
+               $ref: '#/components/schemas/UserItem'
+        '400':
+          description: 'invalid input, object invalid'
+        '409':
+          description: an existing item already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+                  example: deviceId
+        description: Inventory item to add
+  /user/contact:
+    post:
+      tags:
+        - api
+      summary: report user contact
+      operationId: postUserContact
+      responses:
+        '200':
+          description: Contact created
+        '400':
+          description: Error creating contact
+  /tracks:
+    get:
+      tags:
+        - tracks
+      summary: load tracks
+      operationId: getTracks
+      parameters:
+        - in: query
+          name: timestamp
+          schema:
+            type: integer
+          description: Timestamp start from which load tracks
+        - in: query
+          name: lng
+          schema:
+            type: number
+            format: float
+          description: Longitude of user
+        - in: query
+          name: lat
+          schema:
+            type: number
+            format: float
+          description: Latitude of user
+        - in: query
+          name: radius
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 1000
+          description: Radius in km from user geolocation to show tracks
+      responses:
+        '200':
+          description: User tracks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrackItem'
+    post:
+      tags:
+        - tracks
+      summary: post track points for user
+      operationId: postTracks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackItem'
+      responses:
+        '200':
+          description: Track created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackItem'
+        '400':
+          description: Invalid data in request
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Token
+  responses:
+    404NotFound:
+      description:  The specified resource was not found.
+  schemas:
+    UserHealthStatus:
+      type: string
+      enum:
+       - healthy
+       - feel_sick
+       - covid_confirmed
+    UserId:
+      type: integer
+      description: User id
+      example: 1
+    CoordItem:
+      type: object
+      required:
+        - lat
+        - lng
+      properties:
+        lat:
+          type: number
+          format: float
+          description: Latitude
+          example:  38.736946
+        lng:
+          type: number
+          format: float
+          description: Longitude
+          example: -9.142685
+    PointItem:
+      type: object
+      required:
+        - coord
+        - timestamp
+      properties:
+        coord:
+          $ref: '#/components/schemas/CoordItem'
+        timestamp:
+          type: integer
+          format: timestamp
+          example: 1585571836
+    TrackItem:
+      type: object
+      required:
+       - points
+       - user_id
+       - health_status
+      properties:
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/PointItem'
+        user_id:
+          $ref: '#/components/schemas/UserId'
+        health_status:
+          $ref: '#/components/schemas/UserHealthStatus'
+    UserItem:
+      type: object
+      required:
+        - id
+        - token
+        - created
+      properties:
+        id:
+          type: number
+          format: int
+          example: 1
+        token:
+          type: string
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        created:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'

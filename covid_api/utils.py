@@ -1,6 +1,7 @@
 import json
 import enum
 import datetime
+import calendar
 from contextlib import contextmanager
 import decimal
 
@@ -41,6 +42,16 @@ def clean_unicode_string(val):
     return cl_val
 
 
-def json_dumps(d):
-    json_str = json.dumps(d, cls=CustomJSONEncoder)
+def json_dumps(obj):
+    json_str = json.dumps(obj, cls=CustomJSONEncoder)
     return clean_unicode_string(json_str)
+
+
+def datetime_to_timestamp(dt):
+    return calendar.timegm(dt.utctimetuple())
+
+
+class AutoNameEnum(enum.Enum):
+    '''Makes auto enum value equal to key'''
+    def _generate_next_value_(name, start, count, last_values):
+        return name

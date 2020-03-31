@@ -1,12 +1,13 @@
 # utils
-simple_settings
+simple_settings==0.19.1
 pytz
 
 # web
-sanic
+sanic==19.12.2
+pydantic==1.4
 
 # db
-gino
+gino==0.8.6
 geoalchemy2==0.7.0
-alembic
-psycopg2-binary
+alembic==1.4.2
+psycopg2-binary==2.8.4
