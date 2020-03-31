@@ -28,6 +28,7 @@ async def get_tracks(request):
     ]).gino.all()
     track_results = {}
     for tid, uid, health, created, lat, lng, ts in track_query:
+        ts = int(ts)
         if tid not in track_results:
             track_results[tid] = {
                 'id': tid,
@@ -41,7 +42,7 @@ async def get_tracks(request):
                 'lat': lat,
                 'lng': lng
             },
-            'timestamp': int(ts)
+            'timestamp': ts
         })
     return response.json({
         'tracks': list(track_results.values())
@@ -56,7 +57,8 @@ async def upload_track(request):
         raise web_exc.InvalidData(data=err.errors())
     points = []
     for point in track.points:
-        ts = utils.datetime_to_timestamp(point.timestamp)
+        logger.debug(point)
+        ts = utils.datetime_to_timestamp_ms(point.timestamp)
         points.append(f'{point.coord.lat} {point.coord.lng} {ts}')
     geo_points = 'MultiPointZ({})'.format(','.join(points))
     uid = track.userId

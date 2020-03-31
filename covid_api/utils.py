@@ -7,6 +7,8 @@ import decimal
 
 import pytz
 
+EPOCH_DT = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)
+
 
 @contextmanager
 def precision_context(precision):
@@ -45,6 +47,10 @@ def clean_unicode_string(val):
 def json_dumps(obj):
     json_str = json.dumps(obj, cls=CustomJSONEncoder)
     return clean_unicode_string(json_str)
+
+
+def datetime_to_timestamp_ms(dt):
+    return (dt - EPOCH_DT).total_seconds() * 1000.0
 
 
 def datetime_to_timestamp(dt):

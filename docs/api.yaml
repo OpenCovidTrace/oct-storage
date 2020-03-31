@@ -68,8 +68,10 @@ paths:
         - in: query
           name: timestamp
           schema:
-            type: integer
-          description: Timestamp start from which load tracks
+            type: number
+            format: timestamp
+            example: 1585571836321
+          description: Timestamp in milliseconds start from which load tracks
         - in: query
           name: lng
           schema:
@@ -166,9 +168,10 @@ components:
         coord:
           $ref: '#/components/schemas/CoordItem'
         timestamp:
-          type: integer
+          type: number
           format: timestamp
-          example: 1585571836
+          description: timestamp in milliseconds
+          example: 1585571836321
     TrackItem:
       type: object
       required:
