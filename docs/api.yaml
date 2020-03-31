@@ -173,16 +173,16 @@ components:
       type: object
       required:
        - points
-       - user_id
-       - health_status
+       - userId
+       - healthStatus
       properties:
         points:
           type: array
           items:
             $ref: '#/components/schemas/PointItem'
-        user_id:
+        userId:
           $ref: '#/components/schemas/UserId'
-        health_status:
+        healthStatus:
           $ref: '#/components/schemas/UserHealthStatus'
     UserItem:
       type: object

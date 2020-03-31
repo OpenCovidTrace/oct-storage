@@ -18,8 +18,8 @@ class Point(BaseModel):
 
 
 class Track(BaseModel):
-    user_id: int
-    health_status: constants.HealthStatus
+    userId: int
+    healthStatus: constants.HealthStatus
     points: List[Point]
 
     @validator('points')
