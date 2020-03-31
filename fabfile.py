@@ -21,7 +21,7 @@ def deploy():
         sudo_user=www_user,
         sudo_prefix="sudo -H -E "
     ), shell_env(
-        SIMPLE_SETTINGS="covid_api.confg,instance.staging",
+        SIMPLE_SETTINGS="covid_api.config,instance.staging",
         VIRTUAL_ENV=venv_folder,
         PATH="{}:$PATH".format(os.path.join(venv_folder, 'bin'))
     ):

@@ -54,7 +54,6 @@ async def upload_track(request):
         track = forms.Track(**request.json)
     except pydantic.ValidationError as err:
         raise web_exc.InvalidData(data=err.errors())
-    logger.debug(track)
     points = []
     for point in track.points:
         ts = utils.datetime_to_timestamp(point.timestamp)

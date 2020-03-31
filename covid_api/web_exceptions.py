@@ -12,3 +12,8 @@ class AppException(Exception):
 class InvalidData(AppException):
     status_code = 400
     message_code = 'InvalidData'
+
+
+class Unauthorized(AppException):
+    status_code = 401
+    message_code = 'Unauthorized'
