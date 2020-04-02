@@ -1,10 +1,17 @@
-from typing import List
+from typing import List, Optional
 import datetime
 import decimal
 
 from pydantic import BaseModel, validator
 
 from . import constants
+
+
+class TrackFilter(BaseModel):
+    timestamp: Optional[datetime.datetime]
+    radius: Optional[int]
+    lng: Optional[decimal.Decimal]
+    lat: Optional[decimal.Decimal]
 
 
 class Coord(BaseModel):
