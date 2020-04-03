@@ -157,11 +157,11 @@ components:
     PointItem:
       type: object
       required:
-        - timestamp
+        - tst
         - lat
         - lng
       properties:
-        timestamp:
+        tst:
           type: number
           format: timestamp
           description: timestamp in milliseconds

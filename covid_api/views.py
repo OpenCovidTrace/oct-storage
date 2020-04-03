@@ -68,7 +68,7 @@ async def upload_track(request):
     points = []
     for point in track.points:
         logger.debug(point)
-        ts = utils.datetime_to_timestamp_ms(point.timestamp)
+        ts = utils.datetime_to_timestamp_ms(point.tst)
         points.append(f'{point.lat} {point.lng} {ts}')
     geo_points = 'MultiPointZ({})'.format(','.join(points))
     uid = track.userId

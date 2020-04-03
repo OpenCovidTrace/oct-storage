@@ -16,7 +16,7 @@ class TrackFilter(BaseModel):
 
 
 class Point(BaseModel):
-    timestamp: datetime.datetime
+    tst: datetime.datetime
     lng: decimal.Decimal
     lat: decimal.Decimal
 
