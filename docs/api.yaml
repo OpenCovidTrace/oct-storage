@@ -66,7 +66,7 @@ paths:
       operationId: getTracks
       parameters:
         - in: query
-          name: created_from
+          name: lastUpdateTimestamp
           schema:
             type: number
             format: timestamp

@@ -9,7 +9,7 @@ from . import constants
 
 class TrackFilter(BaseModel):
     timestamp: Optional[datetime.datetime]
-    created_from: Optional[datetime.datetime]
+    lastUpdateTimestamp: Optional[datetime.datetime]
     radius: Optional[int]
     lng: Optional[decimal.Decimal]
     lat: Optional[decimal.Decimal]

@@ -31,13 +31,19 @@ async def get_tracks(request):
         ga.func.ST_Y(ga.func.ST_Dump(models.Track.geo_points).geom),
         ga.func.ST_Z(ga.func.ST_Dump(models.Track.geo_points).geom),
     ])
-    if filters.created_from:
+    if filters.lastUpdateTimestamp:
         track_query = track_query.where(
-            models.Track.created > filters.created_from
+            models.Track.created > filters.lastUpdateTimestamp
         )
+    if filters.timestamp:
+        ts_from = utils.datetime_to_timestamp_ms(filters.timestamp)
+    else:
+        ts_from = None
     track_results = {}
     for tid, uid, health, created, lat, lng, ts in await track_query.gino.all():
         ts = int(ts)
+        if ts_from is not None and ts < ts_from:
+            continue
         if tid not in track_results:
             track_results[tid] = {
                 'id': tid,
