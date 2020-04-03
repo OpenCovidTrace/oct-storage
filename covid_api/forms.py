@@ -15,19 +15,15 @@ class TrackFilter(BaseModel):
     lat: Optional[decimal.Decimal]
 
 
-class Coord(BaseModel):
+class Point(BaseModel):
+    timestamp: datetime.datetime
     lng: decimal.Decimal
     lat: decimal.Decimal
 
 
-class Point(BaseModel):
-    timestamp: datetime.datetime
-    coord: Coord
-
-
 class Track(BaseModel):
     userId: int
-    healthStatus: constants.HealthStatus
+    healthStatus: Optional[constants.HealthStatus]
     points: List[Point]
 
     @validator('points')

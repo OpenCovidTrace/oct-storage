@@ -13,5 +13,5 @@ class Track(db.Model):
     created = db.Column(db.DateTime(timezone=True), default=utils.utcnow)
     health_status = db.Column(
         db.Enum(constants.HealthStatus, name='health_status_enum'),
-        default=constants.HealthStatus.healthy
+        default=constants.HealthStatus.covid_confirmed
     )

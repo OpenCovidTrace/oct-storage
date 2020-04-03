@@ -150,12 +150,18 @@ components:
       type: integer
       description: User id
       example: 1
-    CoordItem:
+    PointItem:
       type: object
       required:
+        - timestamp
         - lat
         - lng
       properties:
+        timestamp:
+          type: number
+          format: timestamp
+          description: timestamp in milliseconds
+          example: 1585571836321
         lat:
           type: number
           format: float
@@ -166,25 +172,11 @@ components:
           format: float
           description: Longitude
           example: -9.142685
-    PointItem:
-      type: object
-      required:
-        - coord
-        - timestamp
-      properties:
-        coord:
-          $ref: '#/components/schemas/CoordItem'
-        timestamp:
-          type: number
-          format: timestamp
-          description: timestamp in milliseconds
-          example: 1585571836321
     TrackItem:
       type: object
       required:
        - points
        - userId
-       - healthStatus
       properties:
         points:
           type: array

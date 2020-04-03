@@ -53,11 +53,9 @@ async def get_tracks(request):
                 'created': created
             }
         track_results[tid]['points'].append({
-            'coord': {
-                'lat': lat,
-                'lng': lng
-            },
-            'timestamp': ts
+            'lat': lat,
+            'lng': lng,
+            'timestamp': ts,
         })
     return response.json({
         'tracks': list(track_results.values())
@@ -74,7 +72,7 @@ async def upload_track(request):
     for point in track.points:
         logger.debug(point)
         ts = utils.datetime_to_timestamp_ms(point.timestamp)
-        points.append(f'{point.coord.lat} {point.coord.lng} {ts}')
+        points.append(f'{point.lat} {point.lng} {ts}')
     geo_points = 'MultiPointZ({})'.format(','.join(points))
     uid = track.userId
     logger.debug(f'Adding track for user {uid}: {geo_points}')
