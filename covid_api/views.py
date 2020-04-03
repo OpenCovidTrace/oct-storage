@@ -46,16 +46,13 @@ async def get_tracks(request):
             continue
         if tid not in track_results:
             track_results[tid] = {
-                'id': tid,
                 'points': [],
                 'userId': uid,
-                'healthStatus': health,
-                'created': created
             }
         track_results[tid]['points'].append({
             'lat': lat,
             'lng': lng,
-            'timestamp': ts,
+            'tst': ts,
         })
     return response.json({
         'tracks': list(track_results.values())

@@ -127,7 +127,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrackItem'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
         '400':
           description: Invalid data in request
 components:
@@ -184,8 +188,6 @@ components:
             $ref: '#/components/schemas/PointItem'
         userId:
           $ref: '#/components/schemas/UserId'
-        healthStatus:
-          $ref: '#/components/schemas/UserHealthStatus'
     UserItem:
       type: object
       required:
