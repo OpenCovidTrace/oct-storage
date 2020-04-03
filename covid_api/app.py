@@ -2,11 +2,22 @@ from sanic import Sanic, response
 
 from gino.ext.sanic import Gino
 
+import sentry_sdk
+from sentry_sdk.integrations.sanic import SanicIntegration
+
 from simple_settings import settings
 
 from . import web_exceptions
 
-app = Sanic()
+if settings.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[SanicIntegration()],
+        environment=settings.SENTRY_ENVIRONMENT,
+        debug=settings.DEBUG
+    )
+
+app = Sanic(__name__)
 app.config.update(settings.as_dict())
 
 db = Gino()
