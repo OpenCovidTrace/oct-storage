@@ -15,9 +15,7 @@ info:
 tags:
   - name: tracks
     description: API for tracks
-  - name: api
-    description: API app calls
-  - name: news
+  - name: contacts
     description: API for latest public data, news
 paths:
   /user/signUp:
@@ -134,6 +132,47 @@ paths:
                     example: true
         '400':
           description: Invalid data in request
+  /contacts:
+    get:
+      tags:
+        - contacts
+      summary: get user contacts
+      operationId: getContact
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserId'
+          description: Get contacts for user
+      responses:
+       '200':
+          description: User contacts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactsForUser'
+    post:
+      tags:
+        - contacts
+      summary: report user contats
+      operationId: postContact
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactsForUser'
+      responses:
+       '200':
+          description: Contacts created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -151,9 +190,43 @@ components:
        - feel_sick
        - covid_confirmed
     UserId:
-      type: integer
+      type: string
       description: User id
-      example: 1
+      example: "11421-1414"
+    ContactItem:
+      type: object
+      required:
+        - userId
+        - tst
+        - lat
+        - lng
+      properties:
+        tst:
+          type: number
+          format: timestamp
+          description: timestamp in milliseconds
+          example: 1585571836321
+        lat:
+          type: number
+          format: float
+          description: Latitude
+          example:  38.736946
+        lng:
+          type: number
+          format: float
+          description: Longitude
+          example: -9.142685
+        userId:
+          $ref: '#/components/schemas/UserId'
+    ContactsForUser:
+      type: object
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        contacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactItem'
     PointItem:
       type: object
       required:
@@ -196,9 +269,7 @@ components:
         - created
       properties:
         id:
-          type: number
-          format: int
-          example: 1
+          $ref: '#/components/schemas/UserId'
         token:
           type: string
           example: d290f1ee-6c54-4b01-90e6-d701748f0851

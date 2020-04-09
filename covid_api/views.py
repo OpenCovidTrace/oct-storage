@@ -20,7 +20,6 @@ async def get_tracks(request):
     try:
         filters = forms.TrackFilter(**dict(request.query_args))
     except pydantic.ValidationError as err:
-        print(request.args)
         raise web_exc.InvalidData(data=err.errors())
     track_query = models.db.select([
         models.Track.id,
@@ -78,4 +77,46 @@ async def upload_track(request):
         geo_points=geo_points,
         health_status=track.healthStatus,
     )
+    return response.json({'success': True})
+
+
+@app.route('/contacts/')
+async def get_contacts(request):
+    try:
+        filters = forms.ContactFilter(**dict(request.query_args))
+    except pydantic.ValidationError as err:
+        raise web_exc.InvalidData(data=err.errors())
+    uid = filters.userId
+    contacts = []
+    contact_query = models.db.select([
+        models.Contact.contact_user_id,
+        models.Contact.contact_ts,
+        ga.func.ST_X(models.Contact.geo_point),
+        ga.func.ST_Y(models.Contact.geo_point),
+    ]).where(models.Contact.user_id == uid)
+
+    for contact_uid, ts, lat, lng in await contact_query.gino.all():
+        contacts.append({
+            'userId': contact_uid,
+            'lat': lat,
+            'lng': lng,
+            'tst': utils.datetime_to_timestamp_ms(ts),
+        })
+    return response.json({'userId': uid, 'contacts': contacts})
+
+
+@app.route('/contacts/', methods=['POST'])
+async def upload_contact(request):
+    try:
+        user_contacts = forms.ContactBlock(**request.json)
+    except pydantic.ValidationError as err:
+        raise web_exc.InvalidData(data=err.errors())
+    uid = user_contacts.userId
+    for contact in user_contacts.contacts:
+        await models.Contact.create(
+            user_id=uid,
+            contact_user_id=contact.userId,
+            geo_point=f'Point({contact.lat} {contact.lng})',
+            contact_ts=contact.tst
+        )
     return response.json({'success': True})
