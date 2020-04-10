@@ -4,6 +4,7 @@ from sanic import response
 from sanic.log import logger
 
 import pydantic
+import sqlalchemy as sa
 
 from .app import app
 from . import models, utils, forms
@@ -89,13 +90,26 @@ async def get_contacts(request):
     uid = filters.userId
     contacts = []
     contact_query = models.db.select([
+        models.Contact.user_id,
         models.Contact.contact_user_id,
         models.Contact.contact_ts,
         ga.func.ST_X(models.Contact.geo_point),
         ga.func.ST_Y(models.Contact.geo_point),
-    ]).where(models.Contact.user_id == uid)
+    ]).where(
+        sa.or_(
+            models.Contact.user_id == uid,
+            models.Contact.contact_user_id == uid,
+        )
+    )
+    load_from = filters.lastUpdateTimestamp
+    if load_from:
+        contact_query = contact_query.where(
+            models.Contact.created > load_from
+        )
 
-    for contact_uid, ts, lat, lng in await contact_query.gino.all():
+    for user_uid, contact_uid, ts, lat, lng in await contact_query.gino.all():
+        if contact_uid == uid:
+            contact_uid = user_uid
         contacts.append({
             'userId': contact_uid,
             'lat': lat,

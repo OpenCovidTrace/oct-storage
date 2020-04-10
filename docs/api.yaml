@@ -145,6 +145,13 @@ paths:
           schema:
             $ref: '#/components/schemas/UserId'
           description: Get contacts for user
+        - in: query
+          name: lastUpdateTimestamp
+          schema:
+            type: number
+            format: timestamp
+            example: 1585571836321
+          description: Timestamp tracks upload time to start from
       responses:
        '200':
           description: User contacts

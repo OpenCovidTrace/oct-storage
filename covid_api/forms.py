@@ -13,6 +13,7 @@ class UserId(str):
 
 class ContactFilter(BaseModel):
     userId: UserId
+    lastUpdateTimestamp: Optional[datetime.datetime]
 
 
 class ContactItem(BaseModel):
