@@ -4,8 +4,6 @@ import decimal
 
 from pydantic import BaseModel, validator
 
-from . import constants
-
 
 class DayItem(datetime.date):
     pass

@@ -1,7 +1,7 @@
 import geoalchemy2 as ga
 
 from .app import db
-from . import utils, constants
+from . import utils
 
 
 class Track(db.Model):

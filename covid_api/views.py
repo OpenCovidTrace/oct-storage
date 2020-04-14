@@ -1,10 +1,8 @@
 import geoalchemy2 as ga
 
 from sanic import response
-from sanic.log import logger
 
 import pydantic
-import sqlalchemy as sa
 
 from .app import app
 from . import models, utils, forms
