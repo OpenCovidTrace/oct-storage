@@ -24,8 +24,8 @@ class Longitude(decimal.Decimal):
 class Border(BaseModel):
     minLat: Latitude
     maxLat: Latitude
-    minLon: Longitude
-    maxLon: Longitude
+    minLng: Longitude
+    maxLng: Longitude
 
 
 class TrackFilter(Border):
@@ -42,7 +42,7 @@ class KeyItem(BaseModel):
     border: Border
 
 
-class Keys(BaseModel):
+class KeysBlock(BaseModel):
     keys: List[KeyItem]
 
     @validator('keys')
@@ -70,7 +70,7 @@ class Track(BaseModel):
         return vals
 
 
-class Tracks(BaseModel):
+class TracksBlock(BaseModel):
     tracks: List[Track]
 
     @validator('tracks')

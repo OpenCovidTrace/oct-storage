@@ -1,6 +1,7 @@
 import geoalchemy2 as ga
 
 from sanic import response
+from sanic.log import logger
 
 import pydantic
 
@@ -27,24 +28,24 @@ async def get_tracks(request):
         ga.func.ST_X(ga.func.ST_Dump(models.Track.geo_points).geom),
         ga.func.ST_Y(ga.func.ST_Dump(models.Track.geo_points).geom),
         ga.func.ST_Z(ga.func.ST_Dump(models.Track.geo_points).geom),
-    ])
+    ]).where(
+        models.Track.geo_boundary.intersects(
+            ga.func.ST_MakeEnvelope(
+                filters.minLat, filters.minLng, filters.maxLat, filters.maxLng
+            )
+        )
+    )
     if filters.lastUpdateTimestamp:
         track_query = track_query.where(
-            models.Track.created > filters.lastUpdateTimestamp
+            models.Track.uploaded > filters.lastUpdateTimestamp
         )
-    if filters.timestamp:
-        ts_from = utils.datetime_to_timestamp_ms(filters.timestamp)
-    else:
-        ts_from = None
     track_results = {}
     for tid, ukey, day, lat, lng, ts in await track_query.gino.all():
         ts = int(ts)
-        if ts_from is not None and ts < ts_from:
-            continue
         if tid not in track_results:
             track_results[tid] = {
                 'points': [],
-                'day': utils.datetime_to_timestamp(day),
+                'day': utils.date_to_timestamp(day),
                 'key': ukey,
             }
         track_results[tid]['points'].append({
@@ -60,10 +61,10 @@ async def get_tracks(request):
 @app.route('/tracks/', methods=['POST'])
 async def upload_track(request):
     try:
-        tracks = forms.Tracks(**request.json)
+        data = forms.TracksBlock(**request.json)
     except pydantic.ValidationError as err:
         raise web_exc.InvalidData(data=err.errors())
-    for track in tracks:
+    for track in data.tracks:
         points = []
         min_lat = max_lat = min_lng = max_lng = None
         for point in track.points:
@@ -79,14 +80,20 @@ async def upload_track(request):
                 max_lat = lat
             ts = utils.datetime_to_timestamp_ms(point.tst)
             points.append(f'{lat} {lng} {ts}')
-        geo_points = 'MultiPointZ({})'.format(','.join(points))
-        ukey = track.key
-        await models.Track.create(
-            anon_user_key=ukey,
-            geo_points=geo_points,
-            date_created=track.day,
-            geo_boundary=f'ST_MakeEnvelop('f'{min_lat},{min_lng},{max_lat},{max_lng})'
-        )
+        await models.db.status(models.db.text(
+            'INSERT INTO tracks (anon_user_key, date_created, uploaded, geo_points, geo_boundary)'
+            'VALUES (:key, :day, :uploaded, '
+            ':geo_points, ST_MakeEnvelope(:min_lat, :min_lng, :max_lat, :max_lng))'
+        ), dict(
+            key=track.key,
+            min_lat=min_lat,
+            max_lat=max_lat,
+            min_lng=min_lng,
+            max_lng=max_lng,
+            geo_points='MultiPointZ({})'.format(','.join(points)),
+            day=track.day,
+            uploaded=utils.utcnow()
+        ))
     return response.json({'success': True})
 
 
@@ -98,23 +105,28 @@ async def get_keys(request):
         raise web_exc.InvalidData(data=err.errors())
     keys = []
     key_query = models.db.select([
-        models.Contact.user_key,
-        models.Contact.date_created,
-        ga.func.ST_X(models.Contact.geo_min),
-        ga.func.ST_Y(models.Contact.geo_min),
-        ga.func.ST_X(models.Contact.geo_max),
-        ga.func.ST_Y(models.Contact.geo_max),
-    ])
+        models.Key.user_key,
+        models.Key.date_created,
+        ga.func.ST_Xmin(models.Key.geo_boundary),
+        ga.func.ST_Ymin(models.Key.geo_boundary),
+        ga.func.ST_Xmax(models.Key.geo_boundary),
+        ga.func.ST_Ymax(models.Key.geo_boundary),
+    ]).where(
+        models.Key.geo_boundary.intersects(
+            ga.func.ST_MakeEnvelope(
+                filters.minLat, filters.minLng, filters.maxLat, filters.maxLng
+            )
+        )
+    )
     load_from = filters.lastUpdateTimestamp
     if load_from:
         key_query = key_query.where(
-            models.Contact.created > load_from
+            models.Key.uploaded > load_from
         )
-
     for ukey, day, min_lat, min_lng, max_lat, max_lng in await key_query.gino.all():
         keys.append({
             'value': ukey,
-            'day': utils.datetime_to_timestamp(day),
+            'day': utils.date_to_timestamp(day),
             'border': {
                 'minLat': min_lat,
                 'minLng': min_lng,
@@ -128,16 +140,20 @@ async def get_keys(request):
 @app.route('/keys/', methods=['POST'])
 async def upload_key(request):
     try:
-        keys = forms.Keys(**request.json)
+        data = forms.KeysBlock(**request.json)
     except pydantic.ValidationError as err:
         raise web_exc.InvalidData(data=err.errors())
-    for key in keys:
-        min_lat = key.border.min_lat
-        max_lat = key.border.max_lat
-        min_lng = key.border.min_lng
-        max_lng = key.border.max_lng
-        await models.Key.create(
-            user_key=key.key,
-            geo_boundary=f'ST_MakeEnvelop('f'{min_lat},{min_lng},{max_lat},{max_lng})'
-        )
+    for key in data.keys:
+        await models.db.status(models.db.text(
+            'INSERT INTO keys (user_key, date_created, uploaded, geo_boundary) VALUES '
+            '(:key, :day, :uploaded, ST_MakeEnvelope(:min_lat, :min_lng, :max_lat, :max_lng))'
+        ), dict(
+            key=key.value,
+            min_lat=key.border.minLat,
+            max_lat=key.border.maxLat,
+            min_lng=key.border.minLng,
+            max_lng=key.border.maxLng,
+            day=key.day,
+            uploaded=utils.utcnow()
+        ))
     return response.json({'success': True})

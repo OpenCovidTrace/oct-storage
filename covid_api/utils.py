@@ -57,6 +57,10 @@ def datetime_to_timestamp(dt):
     return calendar.timegm(dt.utctimetuple())
 
 
+def date_to_timestamp(date):
+    return datetime_to_timestamp(datetime.datetime(date.year, date.month, date.day))
+
+
 class AutoNameEnum(enum.Enum):
     '''Makes auto enum value equal to key'''
     def _generate_next_value_(name, start, count, last_values):
