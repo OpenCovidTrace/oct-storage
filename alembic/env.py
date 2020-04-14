@@ -4,8 +4,8 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from covid_api.app import app
-from covid_api.models import db
+from oct_storage.app import app
+from oct_storage.models import db
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

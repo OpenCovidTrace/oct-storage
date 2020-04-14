@@ -10,9 +10,9 @@ env.use_ssh_config = True
 if not env.hosts:
     env.hosts = ["1ch-dev"]
 
-folder = "/srv/covidapi-tracks"
-venv_folder = "/srv/.pyenv/versions/covidapi-tracks"
-git_repo = "git@git.1check.in:covidapp/covidapi-tracks.git"
+folder = "/srv/oct-storage"
+venv_folder = "/srv/.pyenv/versions/oct-storage"
+git_repo = "git@git.1check.in:covidapp/oct-storage.git"
 www_user = "app"
 
 
@@ -21,7 +21,7 @@ def deploy():
         sudo_user=www_user,
         sudo_prefix="sudo -H -E "
     ), shell_env(
-        SIMPLE_SETTINGS="covid_api.config,instance.staging",
+        SIMPLE_SETTINGS="oct_storage.config,instance.staging",
         VIRTUAL_ENV=venv_folder,
         PATH="{}:$PATH".format(os.path.join(venv_folder, 'bin'))
     ):
@@ -30,7 +30,7 @@ def deploy():
         sudo('{}/bin/pip install -r requirements.txt'.format(venv_folder))
         sudo('make upgrade')
 
-    restart('covidapi-tracks')
+    restart('oct-storage')
 
 
 def restart(process):
