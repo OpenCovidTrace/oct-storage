@@ -24,9 +24,8 @@ async def get_tracks(request):
         raise web_exc.InvalidData(data=err.errors())
     track_query = models.db.select([
         models.Track.id,
-        models.Track.user_id,
-        models.Track.health_status,
-        models.Track.created,
+        models.Track.anon_user_key,
+        models.Track.date_created,
         ga.func.ST_X(ga.func.ST_Dump(models.Track.geo_points).geom),
         ga.func.ST_Y(ga.func.ST_Dump(models.Track.geo_points).geom),
         ga.func.ST_Z(ga.func.ST_Dump(models.Track.geo_points).geom),
@@ -40,14 +39,15 @@ async def get_tracks(request):
     else:
         ts_from = None
     track_results = {}
-    for tid, uid, health, created, lat, lng, ts in await track_query.gino.all():
+    for tid, ukey, day, lat, lng, ts in await track_query.gino.all():
         ts = int(ts)
         if ts_from is not None and ts < ts_from:
             continue
         if tid not in track_results:
             track_results[tid] = {
                 'points': [],
-                'userId': uid,
+                'day': utils.datetime_to_timestamp(day),
+                'key': ukey,
             }
         track_results[tid]['points'].append({
             'lat': lat,
@@ -62,75 +62,84 @@ async def get_tracks(request):
 @app.route('/tracks/', methods=['POST'])
 async def upload_track(request):
     try:
-        track = forms.Track(**request.json)
+        tracks = forms.Tracks(**request.json)
     except pydantic.ValidationError as err:
         raise web_exc.InvalidData(data=err.errors())
-    points = []
-    for point in track.points:
-        logger.debug(point)
-        ts = utils.datetime_to_timestamp_ms(point.tst)
-        points.append(f'{point.lat} {point.lng} {ts}')
-    geo_points = 'MultiPointZ({})'.format(','.join(points))
-    uid = track.userId
-    logger.debug(f'Adding track for user {uid}: {geo_points}')
-    await models.Track.create(
-        user_id=uid,
-        geo_points=geo_points,
-        health_status=track.healthStatus,
-    )
+    for track in tracks:
+        points = []
+        min_lat = max_lat = min_lng = max_lng = None
+        for point in track.points:
+            lng = point.lng
+            lat = point.lat
+            if min_lng is None or lng < min_lng:
+                min_lng = lng
+            if max_lng is None or lng > min_lng:
+                max_lng = lng
+            if min_lat is None or lat < min_lat:
+                min_lat = lat
+            if max_lat is None or lat > min_lat:
+                max_lat = lat
+            ts = utils.datetime_to_timestamp_ms(point.tst)
+            points.append(f'{lat} {lng} {ts}')
+        geo_points = 'MultiPointZ({})'.format(','.join(points))
+        ukey = track.key
+        await models.Track.create(
+            anon_user_key=ukey,
+            geo_points=geo_points,
+            date_created=track.day,
+            geo_boundary=f'ST_MakeEnvelop('f'{min_lat},{min_lng},{max_lat},{max_lng})'
+        )
     return response.json({'success': True})
 
 
-@app.route('/contacts/')
-async def get_contacts(request):
+@app.route('/keys/')
+async def get_keys(request):
     try:
-        filters = forms.ContactFilter(**dict(request.query_args))
+        filters = forms.KeyFilter(**dict(request.query_args))
     except pydantic.ValidationError as err:
         raise web_exc.InvalidData(data=err.errors())
-    uid = filters.userId
-    contacts = []
-    contact_query = models.db.select([
-        models.Contact.user_id,
-        models.Contact.contact_user_id,
-        models.Contact.contact_ts,
-        ga.func.ST_X(models.Contact.geo_point),
-        ga.func.ST_Y(models.Contact.geo_point),
-    ]).where(
-        sa.or_(
-            models.Contact.user_id == uid,
-            models.Contact.contact_user_id == uid,
-        )
-    )
+    keys = []
+    key_query = models.db.select([
+        models.Contact.user_key,
+        models.Contact.date_created,
+        ga.func.ST_X(models.Contact.geo_min),
+        ga.func.ST_Y(models.Contact.geo_min),
+        ga.func.ST_X(models.Contact.geo_max),
+        ga.func.ST_Y(models.Contact.geo_max),
+    ])
     load_from = filters.lastUpdateTimestamp
     if load_from:
-        contact_query = contact_query.where(
+        key_query = key_query.where(
             models.Contact.created > load_from
         )
 
-    for user_uid, contact_uid, ts, lat, lng in await contact_query.gino.all():
-        if contact_uid == uid:
-            contact_uid = user_uid
-        contacts.append({
-            'userId': contact_uid,
-            'lat': lat,
-            'lng': lng,
-            'tst': utils.datetime_to_timestamp_ms(ts),
+    for ukey, day, min_lat, min_lng, max_lat, max_lng in await key_query.gino.all():
+        keys.append({
+            'value': ukey,
+            'day': utils.datetime_to_timestamp(day),
+            'border': {
+                'minLat': min_lat,
+                'minLng': min_lng,
+                'maxLat': max_lat,
+                'maxLng': max_lng,
+            },
         })
-    return response.json({'userId': uid, 'contacts': contacts})
+    return response.json({'keys': keys})
 
 
-@app.route('/contacts/', methods=['POST'])
-async def upload_contact(request):
+@app.route('/keys/', methods=['POST'])
+async def upload_key(request):
     try:
-        user_contacts = forms.ContactBlock(**request.json)
+        keys = forms.Keys(**request.json)
     except pydantic.ValidationError as err:
         raise web_exc.InvalidData(data=err.errors())
-    uid = user_contacts.userId
-    for contact in user_contacts.contacts:
-        await models.Contact.create(
-            user_id=uid,
-            contact_user_id=contact.userId,
-            geo_point=f'Point({contact.lat} {contact.lng})',
-            contact_ts=contact.tst
+    for key in keys:
+        min_lat = key.border.min_lat
+        max_lat = key.border.max_lat
+        min_lng = key.border.min_lng
+        max_lng = key.border.max_lng
+        await models.Key.create(
+            user_key=key.key,
+            geo_boundary=f'ST_MakeEnvelop('f'{min_lat},{min_lng},{max_lat},{max_lng})'
         )
     return response.json({'success': True})

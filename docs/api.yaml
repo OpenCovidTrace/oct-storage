@@ -1,61 +1,23 @@
 openapi: 3.0.0
 servers:
   - description: Development server
-    url: http://covidapi-tracks.dev.1check.in/
-security:
-  - ApiKeyAuth: []
+    url: https://storage.dev.opencovidtrace.org/
+  - description: Production server
+    url: https://storage.opencovidtrace.org/
 info:
   description: This is a simple API
   version: "1.0.0"
-  title: CovidApp API
+  title:  API
   contact:
-    email: rodionov@adhoc.im
+    email: rodionov@opencovidtrace.org
   license:
-    name: Adhoc Copyright
+    name: GPL
 tags:
   - name: tracks
-    description: API for tracks
+    description: API for anonymous tracks
   - name: contacts
-    description: API for latest public data, news
+    description: API for contacts data
 paths:
-  /user/signUp:
-    post:
-      tags:
-        - api
-      summary: sign up new user
-      operationId: userSignUp
-      responses:
-        '201':
-          description: item created
-          content:
-            application/json:
-             schema:
-               $ref: '#/components/schemas/UserItem'
-        '400':
-          description: 'invalid input, object invalid'
-        '409':
-          description: an existing item already exists
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                deviceId:
-                  type: string
-                  example: deviceId
-        description: Inventory item to add
-  /user/contact:
-    post:
-      tags:
-        - api
-      summary: report user contact
-      operationId: postUserContact
-      responses:
-        '200':
-          description: Contact created
-        '400':
-          description: Error creating contact
   /tracks:
     get:
       tags:
@@ -78,25 +40,29 @@ paths:
             example: 1585571836321
           description: Timestamp in milliseconds start from which load tracks
         - in: query
-          name: lng
+          name: minLng
           schema:
             type: number
             format: float
-          description: Longitude of user
+          description: Min Longitude of user
         - in: query
-          name: lat
+          name: maxLng
           schema:
             type: number
             format: float
-          description: Latitude of user
+          description: Max Longitude of user
         - in: query
-          name: radius
+          name: minLat
           schema:
-            type: integer
-            default: 50
-            minimum: 1
-            maximum: 1000
-          description: Radius in km from user geolocation to show tracks
+            type: number
+            format: float
+          description: Min Latitude of user
+        - in: query
+          name: maxLat
+          schema:
+            type: number
+            format: float
+          description: Min Latitude of user
       responses:
         '200':
           description: User tracks
@@ -108,7 +74,7 @@ paths:
                   tracks:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TrackItem'
+                      $ref: '#/components/schemas/Tracks'
     post:
       tags:
         - tracks
@@ -118,7 +84,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrackItem'
+              $ref: '#/components/schemas/Tracks'
       responses:
         '200':
           description: Track created
@@ -132,19 +98,13 @@ paths:
                     example: true
         '400':
           description: Invalid data in request
-  /contacts:
+  /keys:
     get:
       tags:
         - contacts
-      summary: get user contacts
+      summary: get infected keys
       operationId: getContact
       parameters:
-        - in: query
-          name: userId
-          required: true
-          schema:
-            $ref: '#/components/schemas/UserId'
-          description: Get contacts for user
         - in: query
           name: lastUpdateTimestamp
           schema:
@@ -152,23 +112,47 @@ paths:
             format: timestamp
             example: 1585571836321
           description: Timestamp tracks upload time to start from
+        - in: query
+          name: minLng
+          schema:
+            type: number
+            format: float
+          description: Min Longitude of user
+        - in: query
+          name: maxLng
+          schema:
+            type: number
+            format: float
+          description: Max Longitude of user
+        - in: query
+          name: minLat
+          schema:
+            type: number
+            format: float
+          description: Min Latitude of user
+        - in: query
+          name: maxLat
+          schema:
+            type: number
+            format: float
+          description: Min Latitude of user
       responses:
        '200':
           description: User contacts
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContactsForUser'
+                $ref: '#/components/schemas/Keys'
     post:
       tags:
         - contacts
-      summary: report user contats
+      summary: upload anonymous user infected contacts 
       operationId: postContact
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ContactsForUser'
+              $ref: '#/components/schemas/Keys'
       responses:
        '200':
           description: Contacts created
@@ -194,46 +178,61 @@ components:
       type: string
       enum:
        - healthy
-       - feel_sick
+       - covid_report
        - covid_confirmed
-    UserId:
+    ClientContactKey:
       type: string
-      description: User id
-      example: "11421-1414"
-    ContactItem:
+      description: Client contact key generated every 15min in base64 format 
+      example: "114211414adadsakjfsalj12e1jlajsd"
+    ClientAnonKey:
+      type: string
+      description: Anonymous user id based on private key hash
+      example: "1414akjlajdklj12klrj1lk2rj1kl2rj"
+    BorderItem:
+      type: object
+      properties:
+        minLat:
+          type: number
+          format: float
+          description: Minimum latitude in rectangle
+          example: 38.736946
+        maxlat:
+          type: number
+          format: float
+          description: Maximum latitude in rectangle
+          example: 38.756946
+        minLon:
+          type: number
+          format: float
+          description: Minimum longitude in rectangle
+          example:  -9.142685
+        maxLon:
+          type: number
+          format: float
+          description: Maximum latitude in rectangle
+          example: -9.102685
+    KeyItem:
       type: object
       required:
-        - userId
-        - tst
-        - lat
-        - lng
+        - value
+        - day
+        - border
       properties:
-        tst:
-          type: number
-          format: timestamp
-          description: timestamp in milliseconds
-          example: 1585571836321
-        lat:
-          type: number
-          format: float
-          description: Latitude
-          example:  38.736946
-        lng:
-          type: number
-          format: float
-          description: Longitude
-          example: -9.142685
-        userId:
-          $ref: '#/components/schemas/UserId'
-    ContactsForUser:
+        value:
+          $ref: '#/components/schemas/ClientContactKey'
+        day:
+          $ref: '#/components/schemas/DayInt'
+        border:
+          $ref: '#/components/schemas/BorderItem'
+    Keys:
       type: object
+      required:
+       - keys
       properties:
-        userId:
-          $ref: '#/components/schemas/UserId'
-        contacts:
+        keys:
           type: array
           items:
-            $ref: '#/components/schemas/ContactItem'
+            $ref: '#/components/schemas/KeyItem'
     PointItem:
       type: object
       required:
@@ -256,31 +255,31 @@ components:
           format: float
           description: Longitude
           example: -9.142685
-    TrackItem:
+    DayInt:
+      type: integer
+      format: timestamp
+      description: day in timestamp format
+    TrackDayItem:
       type: object
       required:
        - points
-       - userId
+       - day
+       - key
       properties:
         points:
           type: array
           items:
             $ref: '#/components/schemas/PointItem'
-        userId:
-          $ref: '#/components/schemas/UserId'
-    UserItem:
+        day:
+          $ref: '#/components/schemas/DayInt'
+        key:
+          $ref: '#/components/schemas/ClientAnonKey'
+    Tracks:
       type: object
       required:
-        - id
-        - token
-        - created
+       - tracks
       properties:
-        id:
-          $ref: '#/components/schemas/UserId'
-        token:
-          type: string
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-        created:
-          type: string
-          format: date-time
-          example: '2016-08-29T09:12:33.001Z'
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackDayItem'

@@ -7,39 +7,51 @@ from pydantic import BaseModel, validator
 from . import constants
 
 
-class UserId(str):
+class DayItem(datetime.date):
     pass
 
 
-class ContactFilter(BaseModel):
-    userId: UserId
+class UserKey(str):
+    pass
+
+
+class Latitude(decimal.Decimal):
+    pass
+
+
+class Longitude(decimal.Decimal):
+    pass
+
+
+class Border(BaseModel):
+    minLat: Latitude
+    maxLat: Latitude
+    minLon: Longitude
+    maxLon: Longitude
+
+
+class TrackFilter(Border):
     lastUpdateTimestamp: Optional[datetime.datetime]
 
 
-class ContactItem(BaseModel):
-    tst: datetime.datetime
-    lng: decimal.Decimal
-    lat: decimal.Decimal
-    userId: UserId
+class KeyFilter(TrackFilter):
+    pass
 
 
-class ContactBlock(BaseModel):
-    userId: UserId
-    contacts: List[ContactItem]
+class KeyItem(BaseModel):
+    day: datetime.date
+    value: UserKey
+    border: Border
 
-    @validator('contacts')
-    def min_contacts(cls, vals):
+
+class Keys(BaseModel):
+    keys: List[KeyItem]
+
+    @validator('keys')
+    def min_keys(cls, vals):
         if not vals:
             raise ValueError('must contain items')
         return vals
-
-
-class TrackFilter(BaseModel):
-    timestamp: Optional[datetime.datetime]
-    lastUpdateTimestamp: Optional[datetime.datetime]
-    radius: Optional[int]
-    lng: Optional[decimal.Decimal]
-    lat: Optional[decimal.Decimal]
 
 
 class Point(BaseModel):
@@ -49,12 +61,22 @@ class Point(BaseModel):
 
 
 class Track(BaseModel):
-    userId: UserId
-    healthStatus: Optional[constants.HealthStatus]
+    key: UserKey
+    day: DayItem
     points: List[Point]
 
     @validator('points')
     def min_points(cls, vals):
+        if not vals:
+            raise ValueError('must contain items')
+        return vals
+
+
+class Tracks(BaseModel):
+    tracks: List[Track]
+
+    @validator('tracks')
+    def min_tracks(cls, vals):
         if not vals:
             raise ValueError('must contain items')
         return vals
