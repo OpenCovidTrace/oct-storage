@@ -1,4 +1,4 @@
-COVID App Tracks API
+OCT Storage API
 
 Requrements
 - python3.7+
@@ -17,4 +17,4 @@ Install instructions
 
 Docs
 
-You can find OpenApi in `docs/api.yaml` and UI https://oct-storage.dev.covidapp.co.uk/docs/
+You can find OpenApi in `docs/api.yaml` and UI https://storage.dev.octrace.org/docs/
