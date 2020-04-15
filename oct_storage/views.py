@@ -1,7 +1,6 @@
 import geoalchemy2 as ga
 
 from sanic import response
-from sanic.log import logger
 
 import pydantic
 
