@@ -33,13 +33,6 @@ paths:
             example: 1585571836321
           description: Timestamp tracks upload time to start from
         - in: query
-          name: timestamp
-          schema:
-            type: number
-            format: timestamp
-            example: 1585571836321
-          description: Timestamp in milliseconds start from which load tracks
-        - in: query
           name: minLng
           schema:
             type: number
