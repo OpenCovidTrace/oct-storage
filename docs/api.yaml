@@ -6,12 +6,12 @@ servers:
     url: https://storage.opencovidtrace.org/
 info:
   description: This is a simple API
-  version: "1.0.0"
+  version: "0.2.0"
   title:  API
   contact:
     email: rodionov@opencovidtrace.org
   license:
-    name: GPL
+    name: LGPLv3
 tags:
   - name: tracks
     description: API for anonymous tracks
@@ -69,12 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  tracks:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Tracks'
+                $ref: '#/components/schemas/Tracks'
     post:
       tags:
         - tracks
@@ -165,11 +160,6 @@ paths:
                     type: boolean
                     example: true
 components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Token
   responses:
     404NotFound:
       description:  The specified resource was not found.
@@ -190,6 +180,11 @@ components:
       example: "1414akjlajdklj12klrj1lk2rj1kl2rj"
     BorderItem:
       type: object
+      required:
+        - minLat
+        - maxLat
+        - minLng
+        - maxLng
       properties:
         minLat:
           type: number
@@ -201,15 +196,15 @@ components:
           format: float
           description: Maximum latitude in rectangle
           example: 38.756946
-        minLon:
+        minLng:
           type: number
           format: float
           description: Minimum longitude in rectangle
           example:  -9.142685
-        maxLon:
+        maxLng:
           type: number
           format: float
-          description: Maximum latitude in rectangle
+          description: Maximum longitude in rectangle
           example: -9.102685
     KeyItem:
       type: object
@@ -259,6 +254,7 @@ components:
       type: integer
       format: timestamp
       description: day in timestamp format
+      example: 1585526400
     TrackDayItem:
       type: object
       required:
