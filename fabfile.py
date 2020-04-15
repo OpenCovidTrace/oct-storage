@@ -12,7 +12,6 @@ if not env.hosts:
 
 folder = "/srv/oct-storage"
 venv_folder = "/srv/.pyenv/versions/oct-storage"
-git_repo = "git@github.com:Open-Contact-Tracing/oct-storage.git"
 www_user = "app"
 
 
