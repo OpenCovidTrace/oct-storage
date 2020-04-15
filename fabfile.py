@@ -8,11 +8,11 @@ from fabric.api import sudo, env, settings, cd, shell_env
 
 env.use_ssh_config = True
 if not env.hosts:
-    env.hosts = ["1ch-dev"]
+    env.hosts = ["oct-dev"]
 
 folder = "/srv/oct-storage"
 venv_folder = "/srv/.pyenv/versions/oct-storage"
-git_repo = "git@git.1check.in:covidapp/oct-storage.git"
+git_repo = "git@github.com:Open-Contact-Tracing/oct-storage.git"
 www_user = "app"
 
 
