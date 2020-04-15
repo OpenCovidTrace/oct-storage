@@ -1,11 +1,11 @@
-OCT Storage API
+# OCT Storage API
 
-Requrements
+## Requrements
 - python3.7+
 - postgres + postgis extension
 
 
-Install instructions
+## Install instructions
 
 1. Create and activate virtual environment for python 3.7 or more (see pyenv)
 2. Install python deps `pip install -r requirements_test.txt`
@@ -15,6 +15,9 @@ Install instructions
 6. run project `python run.py`
 
 
-Docs
+## Docs
 
-You can find OpenApi in `docs/api.yaml` and UI https://storage.dev.octrace.org/docs/
+You can find OpenApi in `docs/api.yaml` and UI https://storage.dev.opencovidtrace.org/docs/
+
+## Test version
+You can find latest deployed version for testing https://storage.dev.opencovidtrace.org/
