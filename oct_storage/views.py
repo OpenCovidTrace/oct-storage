@@ -21,7 +21,6 @@ async def get_tracks(request):
     except pydantic.ValidationError as err:
         raise web_exc.InvalidData(data=err.errors())
     track_query = models.db.select([
-        models.Track.id,
         models.Track.anon_user_key,
         models.Track.date_created,
         ga.func.ST_X(ga.func.ST_Dump(models.Track.geo_points).geom),
@@ -39,7 +38,8 @@ async def get_tracks(request):
             models.Track.uploaded > filters.lastUpdateTimestamp
         )
     track_results = {}
-    for tid, ukey, day, lat, lng, ts in await track_query.gino.all():
+    for ukey, day, lat, lng, ts in await track_query.gino.all():
+        tid = (ukey, day)
         ts = int(ts)
         if tid not in track_results:
             track_results[tid] = {
