@@ -3,10 +3,20 @@ import datetime
 import decimal
 
 from pydantic import BaseModel, validator
+from . import utils
 
 
 class DayItem(datetime.date):
-    pass
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not isinstance(v, int):
+            raise TypeError('day in int type required')
+        dt = utils.day_number_to_date(v)
+        return cls(dt.year, dt.month, dt.day)
 
 
 class UserKey(str):

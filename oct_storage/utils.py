@@ -9,6 +9,8 @@ import pytz
 
 EPOCH_DT = datetime.datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)
 
+DAY_SECONDS = 60 * 60 * 24
+
 
 @contextmanager
 def precision_context(precision):
@@ -53,12 +55,20 @@ def datetime_to_timestamp_ms(dt):
     return (dt - EPOCH_DT).total_seconds() * 1000.0
 
 
-def datetime_to_timestamp(dt):
+def datetime_to_timestamp(dt: datetime.datetime) -> int:
     return calendar.timegm(dt.utctimetuple())
 
 
-def date_to_timestamp(date):
+def date_to_timestamp(date: datetime.date) -> int:
     return datetime_to_timestamp(datetime.datetime(date.year, date.month, date.day))
+
+
+def date_to_day_number(date: datetime.date) -> int:
+    return int(date_to_timestamp(date) / DAY_SECONDS)
+
+
+def day_number_to_date(day_number: int) -> datetime.date:
+    return datetime.date.fromtimestamp(DAY_SECONDS * day_number)
 
 
 class AutoNameEnum(enum.Enum):
