@@ -44,7 +44,7 @@ async def get_tracks(request):
         if tid not in track_results:
             track_results[tid] = {
                 'points': [],
-                'day': utils.date_to_timestamp(day),
+                'day': utils.date_to_day_number(day),
                 'key': ukey,
             }
         track_results[tid]['points'].append({
@@ -125,7 +125,7 @@ async def get_keys(request):
     for ukey, day, min_lat, min_lng, max_lat, max_lng in await key_query.gino.all():
         keys.append({
             'value': ukey,
-            'day': utils.date_to_timestamp(day),
+            'day': utils.date_to_day_number(day),
             'border': {
                 'minLat': min_lat,
                 'minLng': min_lng,
