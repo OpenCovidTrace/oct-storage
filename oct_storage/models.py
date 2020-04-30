@@ -21,6 +21,7 @@ class Key(db.Model):
 
     id = db.Column(db.BigInteger(), primary_key=True)
     user_key = db.Column(db.String(80), nullable=False)
+    meta = db.Column(db.String(30), nullable=True)
     date_created = db.Column(db.Date())
     uploaded = db.Column(db.DateTime(timezone=True), default=utils.utcnow)
 

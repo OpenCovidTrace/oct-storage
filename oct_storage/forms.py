@@ -46,10 +46,15 @@ class KeyFilter(TrackFilter):
     pass
 
 
+class Meta(str):
+    pass
+
+
 class KeyItem(BaseModel):
     day: datetime.date
     value: UserKey
     border: Border
+    meta: Optional[Meta]
 
 
 class KeysBlock(BaseModel):

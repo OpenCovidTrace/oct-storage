@@ -212,6 +212,10 @@ components:
           $ref: '#/components/schemas/DayInt'
         border:
           $ref: '#/components/schemas/BorderItem'
+        meta:
+          type: string
+          description: key for metadata decryption
+          example: 'verylongkey'
     Keys:
       type: object
       required:

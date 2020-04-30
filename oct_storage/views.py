@@ -105,6 +105,7 @@ async def get_keys(request):
     keys = []
     key_query = models.db.select([
         models.Key.user_key,
+        models.Key.meta,
         models.Key.date_created,
         ga.func.ST_Xmin(models.Key.geo_boundary),
         ga.func.ST_Ymin(models.Key.geo_boundary),
@@ -122,9 +123,10 @@ async def get_keys(request):
         key_query = key_query.where(
             models.Key.uploaded > load_from
         )
-    for ukey, day, min_lat, min_lng, max_lat, max_lng in await key_query.gino.all():
+    for ukey, meta, day, min_lat, min_lng, max_lat, max_lng in await key_query.gino.all():
         keys.append({
             'value': ukey,
+            'meta': meta,
             'day': utils.date_to_day_number(day),
             'border': {
                 'minLat': min_lat,
@@ -144,10 +146,12 @@ async def upload_key(request):
         raise web_exc.InvalidData(data=err.errors())
     for key in data.keys:
         await models.db.status(models.db.text(
-            'INSERT INTO keys (user_key, date_created, uploaded, geo_boundary) VALUES '
-            '(:key, :day, :uploaded, ST_MakeEnvelope(:min_lat, :min_lng, :max_lat, :max_lng))'
+            'INSERT INTO keys (user_key, meta, date_created, uploaded, geo_boundary) VALUES '
+            '(:key, :meta, :day, :uploaded,'
+            'ST_MakeEnvelope(:min_lat, :min_lng, :max_lat, :max_lng))'
         ), dict(
             key=key.value,
+            meta=key.meta,
             min_lat=key.border.minLat,
             max_lat=key.border.maxLat,
             min_lng=key.border.minLng,
