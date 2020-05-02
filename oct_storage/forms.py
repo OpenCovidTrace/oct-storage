@@ -51,7 +51,7 @@ class Meta(str):
 
 
 class KeyItem(BaseModel):
-    day: datetime.date
+    day: DayItem
     value: UserKey
     border: Border
     meta: Optional[Meta]
