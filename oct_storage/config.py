@@ -1,5 +1,8 @@
 DEBUG = False
 
+# server
+HOST = None
+
 # db settings
 DB_HOST = None
 DB_PORT = None
