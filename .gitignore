@@ -6,6 +6,7 @@ log.txt
 nohup.out
 venv/
 instance/
+!/instance/.placeholder
 .idea/
 *.iml
 *.pdf
