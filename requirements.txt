@@ -4,7 +4,7 @@ pytz
 sentry-sdk==0.14.3
 
 # web
-sanic==19.12.2
+sanic==20.12.6
 pydantic==1.4
 
 # db
